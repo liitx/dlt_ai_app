@@ -7,8 +7,9 @@ import 'package:serverpod_flutter/serverpod_flutter.dart';
 // The client is set up to connect to a Serverpod running on a local server on
 // the default port. You will need to modify this to connect to staging or
 // production servers.
-var client = Client('http://$localhost:8080/')
-  ..connectivityMonitor = FlutterConnectivityMonitor();
+var client = Client(
+  'http://$localhost:8080/',
+)..connectivityMonitor = FlutterConnectivityMonitor();
 
 void main() {
   runApp(const MyApp());
@@ -30,108 +31,64 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key, required String title});
 
   @override
-  MyHomePageState createState() => MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class MyHomePageState extends State<MyHomePage> {
-  // These fields hold the last result or error message that we've received from
-  // the server or null if no result exists yet.
-  String? _resultMessage;
-  String? _errorMessage;
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
 
-  final _textEditingController = TextEditingController();
-
-  // Calls the `hello` method of the `example` endpoint. Will set either the
-  // `_resultMessage` or `_errorMessage` field, depending on if the call
-  // is successful.
-  void _callHello() async {
-    try {
-      final result = await client.example.hello(_textEditingController.text);
-      setState(() {
-        _errorMessage = null;
-        _resultMessage = result;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = '$e';
-      });
-    }
+  init() async {
+    final dltFiles = await client.dltFile.list();
+    print(dltFiles);
+    //     final dltFile = await client.dltFile.create();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: TextField(
-                controller: _textEditingController,
-                decoration: const InputDecoration(
-                  hintText: 'Enter your name',
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: ElevatedButton(
-                onPressed: _callHello,
-                child: const Text('Send to Server'),
-              ),
-            ),
-            _ResultDisplay(
-              resultMessage: _resultMessage,
-              errorMessage: _errorMessage,
-            ),
-          ],
+        appBar: AppBar(
+          title: Text('DLT AI'),
         ),
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () async {
+            DateTime now = DateTime.now();
+            int dateAsInt = now.year * 10000 +
+                now.month * 100 +
+                now.day +
+                now.hour +
+                now.minute +
+                now.second +
+                now.millisecond;
+            final df = DltFile(
+              title: 'flutter_media_dlt',
+              created: dateAsInt,
+            );
+
+            print('dlt-file: ${df.title} created: ${df.created}');
+            final dltFile = await client.dltFile.create(df);
+            print('dlt-file: ${dltFile.title} created: ${dltFile.created}');
+          },
+        ),
+        body: Column(
+          children: [
+            Text('Dlt AI Tool'),
+            // IconButton(
+            //     onPressed: () async => await client.dltFile.list([
+            //           DltFile.fromJson(jsonSerialization, serializationManager)
+            //         ]),
+            //     icon: const Icon(Icons.add))
+          ],
+        ));
   }
 }
 
 // _ResultDisplays shows the result of the call. Either the returned result from
 // the `example.hello` endpoint method or an error message.
-class _ResultDisplay extends StatelessWidget {
-  final String? resultMessage;
-  final String? errorMessage;
-
-  const _ResultDisplay({
-    this.resultMessage,
-    this.errorMessage,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    String text;
-    Color backgroundColor;
-    if (errorMessage != null) {
-      backgroundColor = Colors.red[300]!;
-      text = errorMessage!;
-    } else if (resultMessage != null) {
-      backgroundColor = Colors.green[300]!;
-      text = resultMessage!;
-    } else {
-      backgroundColor = Colors.grey[300]!;
-      text = 'No server response yet.';
-    }
-
-    return Container(
-      height: 50,
-      color: backgroundColor,
-      child: Center(
-        child: Text(text),
-      ),
-    );
-  }
-}

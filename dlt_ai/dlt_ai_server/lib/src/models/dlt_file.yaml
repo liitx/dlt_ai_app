@@ -1,0 +1,6 @@
+class: DltFile
+table: dlt_file
+
+fields:
+  title: String
+  created: int
