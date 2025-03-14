@@ -28,6 +28,13 @@ class EndpointDltFile extends _i1.EndpointRef {
         {},
       );
 
+  _i2.Future<_i3.DltFile?> retrieve(int id) =>
+      caller.callServerEndpoint<_i3.DltFile?>(
+        'dltFile',
+        'retrieve',
+        {'id': id},
+      );
+
   _i2.Future<_i3.DltFile> create(_i3.DltFile dltFile) =>
       caller.callServerEndpoint<_i3.DltFile>(
         'dltFile',

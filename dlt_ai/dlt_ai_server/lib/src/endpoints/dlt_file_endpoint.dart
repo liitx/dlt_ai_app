@@ -6,6 +6,10 @@ class DltFileEndpoint extends Endpoint {
     return DltFile.db.find(session);
   }
 
+  Future<DltFile?> retrieve(Session session, int id) async {
+    return DltFile.db.findById(session, id);
+  }
+
   Future<DltFile> create(Session session, DltFile dltFile) async {
     return await DltFile.db.insertRow(session, dltFile);
   }
